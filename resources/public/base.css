@@ -1,0 +1,20 @@
+body {
+    font-family:Helvetica,Arial,Serif,"华文细黑";
+    font-weight:lighter;
+    color:#666;
+}
+#frame {
+    width:480px;
+    margin: 0 auto;
+}
+
+.content {
+    min-height:10em;
+}
+
+.footer {
+    border-top: solid 1px #ccc;
+    padding: 2px;
+    text-align: center;
+    font-size:0.8em;
+}
