@@ -4,7 +4,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/java.jdbc "0.3.0-alpha5"]
                  [postgresql/postgresql "8.4-702.jdbc4"]
-                 [clojureql "1.0.4"]
+                 [korma "0.3.0-RC5"]
                  [compojure "1.1.5"]
                  [clj-time "0.6.0"]
                  [hiccup "1.0.4"]]
