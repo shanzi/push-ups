@@ -3,6 +3,15 @@ body {
     font-weight:lighter;
     color:#666;
 }
+
+table {
+    width:100%;
+}
+
+th {
+    text-align:left;
+}
+
 #frame {
     width:480px;
     margin: 0 auto;
@@ -17,4 +26,15 @@ body {
     padding: 2px;
     text-align: center;
     font-size:0.8em;
+}
+
+.time-choice-set label {
+    display:inline-block;
+    width:40%;
+    text-align:right;
+    padding: 0 5px 0 0;
+}
+
+.form-controllers {
+    text-align:center;
 }

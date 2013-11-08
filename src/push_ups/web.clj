@@ -1,6 +1,7 @@
 (ns push-ups.web
   (:use [hiccup.page]
-        [hiccup.element]))
+        [hiccup.element])
+  (:require [push-ups.forms :as forms]))
 
 
 (defn base
@@ -20,7 +21,9 @@
   "index template"
   (base "push-ups calendar"
         [:p "This website is designed to help create calendar events 
-            for your push-up exercise plan according to the instructions from "
+            for your push-up exercise according to the instructions from "
          (link-to "http://www.hundredpushups.com/" "handredspushups.com") "."]
         [:p "No need to register, just fill in the form below, you will get an ics format
-            calendar subscription source."]))
+            calendar subscription source."]
+        [:p.initial-form
+         (forms/initial-form "/new")]))
