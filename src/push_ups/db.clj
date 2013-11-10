@@ -2,7 +2,7 @@
   (:use [clojure.java.jdbc :only (with-connection create-table)]
         korma.db
         korma.core
-        [clj-time.format :only (formatters parse unparse)])
+        [clj-time.coerce :only (from-sql-date to-sql-date)])
   (:require clojure.pprint)
   (:import java.util.UUID))
 
@@ -17,6 +17,7 @@
   (with-connection db
                    (create-table :ics_records
                                  [:permalink "varchar(15)" "PRIMARY KEY"]
+                                 [:age :integer]
                                  [:initial_test_r :integer]
                                  [:part_1_date :datetime]
                                  [:part_1_test_r :integer]
@@ -36,17 +37,14 @@
   []
   (format "%x" (.hashCode (java.util.UUID/randomUUID))))
 
-(defn str-to-date
-  [string]
-  (parse (formatters :date-time) string))
-
 (defn new-ics-record
   "create a new ics record and insert into database"
-  [permalink initial_test_result start_date]
+  [permalink age initial-test-result start-date]
   (insert ics-records 
           (values {:permalink permalink
-                   :initial_test_r initial_test_result
-                   :part_1_date (str start_date)})))
+                   :age age
+                   :initial_test_r initial-test-result
+                   :part_1_date (to-sql-date start-date)})))
 
 (defn get-ics-record
   "get ics record with permalink"
@@ -57,7 +55,7 @@
     ((fn [entity]
        (for [[k v] entity]
          (if (and v (.endsWith (str k) "date"))
-             {k (str-to-date v)}
+             {k (from-sql-date v)}
              {k v}))))
     (into {})))
 
@@ -65,5 +63,9 @@
   "Update ics record with specified permalink"
   [permalink values]
   (update ics-records
-          (set-fields values)
+          (set-fields (into {} (map (fn [[k v]]
+                                      (if (and (not (nil? v)  (.endsWith (str k) "date")))
+                                        {k (to-sql-date v)}
+                                        {k v}))
+                                    values)))
           (where {:permalink permalink})))
