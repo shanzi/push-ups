@@ -3,7 +3,8 @@
         korma.db
         korma.core
         [clj-time.coerce :only (from-sql-date to-sql-date)])
-  (:require clojure.pprint)
+  (:require clojure.pprint
+            [clojure.tools.logging :as log])
   (:import java.util.UUID))
 
 (def db (if (System/getenv "DATABASE_URL")
@@ -17,7 +18,6 @@
   (with-connection db
                    (create-table :ics_records
                                  [:permalink "varchar(15)" "PRIMARY KEY"]
-                                 [:age :integer]
                                  [:initial_test_r :integer]
                                  [:part_1_date :datetime]
                                  [:part_1_test_r :integer]
@@ -37,35 +37,48 @@
   []
   (format "%x" (.hashCode (java.util.UUID/randomUUID))))
 
+(defmacro dbsafe
+  "catch errors throwed by db, avoid interruption"
+  [& forms]
+  (let [esym (gensym)]
+  `(try 
+     (do ~@forms)
+     (catch Exception ~esym
+       (do 
+         (log/error ~esym "db operation failed")
+         false)))))
+
 (defn new-ics-record
   "create a new ics record and insert into database"
-  [permalink age initial-test-result start-date]
-  (insert ics-records 
-          (values {:permalink permalink
-                   :age age
-                   :initial_test_r initial-test-result
-                   :part_1_date (to-sql-date start-date)})))
+  [permalink initial-test-result start-date]
+  (dbsafe
+    (insert ics-records 
+            (values {:permalink permalink
+                     :initial_test_r initial-test-result
+                     :part_1_date (to-sql-date start-date)}))))
 
 (defn get-ics-record
   "get ics record with permalink"
   [permalink]
-  (->> (select ics-records 
-              (where {:permalink permalink}))
-    (first)
-    ((fn [entity]
-       (for [[k v] entity]
-         (if (and v (.endsWith (str k) "date"))
+  (dbsafe
+    (->> (select ics-records 
+                 (where {:permalink permalink}))
+      (first)
+      ((fn [entity]
+         (for [[k v] entity]
+           (if (and v (.endsWith (str k) "date"))
              {k (from-sql-date v)}
              {k v}))))
-    (into {})))
+      (into {}))))
 
 (defn update-ics-record
   "Update ics record with specified permalink"
   [permalink values]
-  (update ics-records
-          (set-fields (into {} (map (fn [[k v]]
-                                      (if (and (not (nil? v)  (.endsWith (str k) "date")))
-                                        {k (to-sql-date v)}
-                                        {k v}))
-                                    values)))
-          (where {:permalink permalink})))
+  (dbsafe
+    (update ics-records
+            (set-fields (into {} (map (fn [[k v]]
+                                        (if (and (not (nil? v)  (.endsWith (str k) "date")))
+                                          {k (to-sql-date v)}
+                                          {k v}))
+                                      values)))
+            (where {:permalink permalink}))))

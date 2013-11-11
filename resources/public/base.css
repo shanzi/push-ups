@@ -38,3 +38,13 @@ th {
 .form-controllers {
     text-align:center;
 }
+
+.info {
+    border: 2px solid #69f;
+    padding: 10px;
+}
+
+.error {
+    border: 2px solid #f96;
+    padding: 10px;
+}

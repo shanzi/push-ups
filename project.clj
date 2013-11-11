@@ -3,6 +3,7 @@
   :url "http://example.com/FIXME"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/java.jdbc "0.3.0-alpha5"]
+                 [org.clojure/tools.logging "0.2.6"]
                  [postgresql/postgresql "8.4-702.jdbc4"]
                  [korma "0.3.0-RC5"]
                  [compojure "1.1.5"]

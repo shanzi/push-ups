@@ -8,7 +8,9 @@
            (GET "/" [] (web/index))
            (GET "/new" [] (web/new-plan))
            (PUT "/new" {params :params flash :flash} (web/new-plan params flash))
-           (route/resources "/")
+           (context "/i/:permalink" [permalink]
+                    (GET "/" {flash :flash} (web/view-plan permalink flash)))
+           (route/resources "/statics/")
            (route/not-found "Not Found"))
 
 

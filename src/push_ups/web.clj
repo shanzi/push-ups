@@ -1,8 +1,9 @@
 (ns push-ups.web
   (:use hiccup.page
         hiccup.element
-        [ring.util.response :only (redirect)])
+        [ring.util.response :only (redirect not-found)])
   (:require [push-ups.forms :as forms]
+            [push-ups.db :as db]
             clojure.pprint))
 
 
@@ -10,14 +11,14 @@
   "base html frameworks"
   [title & content]
   (html5
-    (include-css "base.css")
+    (include-css "/statics/base.css")
     [:head [:title title]]
     [:body
      [:div#frame
-      (image "logo.png" "logo")
+      (image "/statics/logo.png" "logo")
       [:div.content content]
       [:div.footer "xiuxiu.de (c) 2013"]]
-     (include-js "base.js")]))
+     (include-js "/statics/base.js")]))
 
 
 (defn index []
@@ -49,4 +50,18 @@
            test-result (forms/parse-test-result params)]
        (if (nil? start-date)
          (new-plan nil "There are errors in your form, please correct them")
-         (redirect "/"))))))
+         (let [permalink (db/gen-permalink)]
+          (if (db/new-ics-record permalink test-result start-date)
+           (merge 
+             (redirect (format "/i/%s" permalink))
+             {:flash "Your exercise plan has been successfully created."})
+           (new-plan nil "Something is wrong, please try again"))))))))
+
+(defn view-plan
+  "View plan infomation"
+  [permalink flash]
+  (let [ics-record (db/get-ics-record permalink)]
+    (if-not (nil? ics-record)
+      (base "View your exercise plan"
+            (if-not (nil? flash) [:p.info flash]))
+      (not-found))))
