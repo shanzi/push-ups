@@ -4,6 +4,7 @@
         [ring.util.response :only (redirect not-found)])
   (:require [push-ups.forms :as forms]
             [push-ups.db :as db]
+            [push-ups.plan :as plan]
             clojure.pprint))
 
 
@@ -40,7 +41,7 @@
    (new-plan nil nil))
   ([params flash]
    (clojure.pprint/pprint params)
-   (if (nil? params)
+   (if (empty? params)
      (base "Create Exercise Plan"
            [:h1 "Create a new exercise plan"]
            (when-not (nil? flash)
@@ -57,11 +58,39 @@
              {:flash "Your exercise plan has been successfully created."})
            (new-plan nil "Something is wrong, please try again"))))))))
 
+
+(defn- view-part
+  [idx part colcount]
+  (into (conj 
+          [:table [:tr [:th {:colspan colcount} (str "PART " (inc idx))]]]
+          (into [:tr [:th "Datetime"]] (for [i (range colcount)] [:th (str "Set " (inc i))]))) 
+        (map (fn [plan]
+               (let [sets (:sets plan)
+                     end  (:end plan)
+                     date (:date plan)]
+                 (conj 
+                   (into [:tr [:td (str date)]]
+                         (map #(vector :td %) sets))
+                   [:td (format "max (at least %d)" end)])))
+             part)))
+
+(defn- max-cols
+  [parts]
+  (inc (apply max (into [0] 
+                        (map (fn [part]
+                               (apply max (into [0]
+                                                (map #(count (:sets %)) part)))) parts)))))
+
+
 (defn view-plan
   "View plan infomation"
   [permalink flash]
   (let [ics-record (db/get-ics-record permalink)]
-    (if-not (nil? ics-record)
+    (if (not ics-record)
+      (not-found "Not Found")
       (base "View your exercise plan"
-            (if-not (nil? flash) [:p.info flash]))
-      (not-found))))
+            (when-not (nil? flash) [:p.info flash])
+            [:h3 "Your plan detail"]
+            (let [parts (plan/plan-with-ics-record ics-record)
+                  colcount (max-cols parts)]
+              (map-indexed #(view-part %1 %2 colcount) parts))))))

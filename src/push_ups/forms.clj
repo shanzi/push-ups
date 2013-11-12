@@ -39,26 +39,6 @@
                ["Night" (map #(vector (format "%d pm." (- % 12)) %) (range 19 23))]]
               time-choice)]))
 
-(defn- test-input-row
-  [label-text value checked seperators]
-  (into [:tr]
-        (let [radio-name value]
-          [[:td (radio-button "age" checked radio-name)]
-           [:td (label (str "age-" radio-name) label-text)]
-           [:td (drop-down (str "result" value)
-                           (into [] (map-indexed (fn [idx [a b]] 
-                                                   [(if (nil? b)
-                                                      (format "%d & above" a)
-                                                      (format "%d - %d" a (dec b)))
-                                                    (inc idx)])
-                                                 (partition 2 1 seperators))))]])))
-
-(def ^:private test-course 
-  [["< 40" [0 6 15 30 50 100 150 nil]]
-   ["40 - 55" [0 6 13 25 45 75 125 nil]]
-   ["55 & above" [0 6 11 20 35 65 100 nil]]])
-
-
 (defn exercise-time-choice-set
   ([legend]
    (exercise-time-choice-set legend nil))
@@ -72,19 +52,40 @@
     (day-in-week day-choice)
     (time-in-day time-choice)]))
 
+(def test-course 
+ [[0 6 11 21 nil]
+  [16 21 25 nil]
+  [31 36 40 nil]])
+
 (defn test-result-set
-  ([legend]
-   (test-result-set legend nil))
-  ([legend description]
-   (test-result-set legend 0 description))
-  ([legend checked-idx description]
+  ([legend course]
+   (test-result-set legend course nil))
+  ([legend course description]
+   (test-result-set legend  course 0 description))
+  ([legend course checked-idx description]
    [:fieldset.result-set [:legend legend] 
     (when-not (or (nil? description) (false? description)) 
       (into [:p] description))
-    (into [:table [:tr [:th ""] [:th "Your Age"] [:th {:width "60%"} "How many push-ups did you do?"]]]
-          (map-indexed (fn [idx [label sep]] 
-                         (test-input-row label idx (= idx checked-idx) sep))
-                       test-course))]))
+    [:table 
+     [:tr [:th ""] [:th "Your Age"] [:th {:width "60%"} "How many push-ups did you do?"]]
+     [:tr 
+      [:td (radio-button "age" (= 0 checked-idx) 1)]
+      [:td (label "age-1" "< 40")]
+      [:td {:rowspan 3} (drop-down (str "result")
+                                   (into [] (map-indexed
+                                              (fn [idx [a b]]
+                                                [(if (nil? b)
+                                                   (format "%d & above" a)
+                                                   (format "%d - %d" a (dec b)))
+                                                 (inc idx)])
+                                              (partition 2 1 course))))]]
+     [:tr 
+      [:td (radio-button "age" (= 1 checked-idx) 2)]
+      [:td (label "age-1" "40 - 55")]]
+     [:tr 
+      [:td (radio-button "age" (= 2 checked-idx) 2)]
+      [:td (label "age-1" "> 55")]]]]))
+
 
 (defmacro form-with-timezone
   "generate form which will automatically add a timezone field and with submit controllers"
@@ -102,6 +103,7 @@
                                      You will be able to change the settings after taken the first periodic test 
                                      two weeks later.")
            (test-result-set "Input initial test result"
+                            (get test-course 0)
                             [nil 
                              "Before your begin your exercise, try to execute as many good-form push ups as you can
                             and count the number. Please click "
@@ -139,5 +141,5 @@
 (defn parse-test-result
   [params]
   (let [age (:age params)
-        result (get params (keyword (str"result" age)) )]
+        result (:result params)]
     (read-string result)))

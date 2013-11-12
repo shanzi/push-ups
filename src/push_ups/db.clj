@@ -2,7 +2,7 @@
   (:use [clojure.java.jdbc :only (with-connection create-table)]
         korma.db
         korma.core
-        [clj-time.coerce :only (from-sql-date to-sql-date)])
+        [clj-time.coerce :only (from-string)])
   (:require clojure.pprint
             [clojure.tools.logging :as log])
   (:import java.util.UUID))
@@ -18,14 +18,13 @@
   (with-connection db
                    (create-table :ics_records
                                  [:permalink "varchar(15)" "PRIMARY KEY"]
-                                 [:initial_test_r :integer]
-                                 [:part_1_date :datetime]
                                  [:part_1_test_r :integer]
-                                 [:part_2_date :datetime]
+                                 [:part_1_date :datetime]
                                  [:part_2_test_r :integer]
+                                 [:part_2_date :datetime]
+                                 [:part_3_test_r :datetime]
                                  [:part_3_date :datetime]
-                                 [:final_test_r :integer]
-                                 )))
+                                 [:final_test_r :integer])))
 
 
 (defentity ics-records
@@ -54,8 +53,8 @@
   (dbsafe
     (insert ics-records 
             (values {:permalink permalink
-                     :initial_test_r initial-test-result
-                     :part_1_date (to-sql-date start-date)}))))
+                     :part_1_test_r initial-test-result
+                     :part_1_date (str start-date)}))))
 
 (defn get-ics-record
   "get ics record with permalink"
@@ -67,7 +66,7 @@
       ((fn [entity]
          (for [[k v] entity]
            (if (and v (.endsWith (str k) "date"))
-             {k (from-sql-date v)}
+             {k (from-string v)}
              {k v}))))
       (into {}))))
 
