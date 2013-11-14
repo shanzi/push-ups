@@ -6,14 +6,34 @@ body {
 
 table {
     width:100%;
+    border: 1px solid #ccc;
 }
 
 th {
     text-align:left;
 }
 
+
+th.title {
+    background:#eee;
+    text-align:center;
+}
+
+.rest {
+    background:#BAFFD0;
+}
+
+.end {
+    background:#F5F6FF;
+}
+
+th, td { border: 1px solid #eee; }
+td.M, td.T {background: #D1FFD9;}
+td.W, td.Th {background: #D1ECFF;}
+td.F, td.S {background: #FFD1D2;}
+
 #frame {
-    width:480px;
+    width:640px;
     margin: 0 auto;
 }
 
@@ -28,23 +48,53 @@ th {
     font-size:0.8em;
 }
 
-.time-choice-set label {
-    display:inline-block;
-    width:40%;
-    text-align:right;
-    padding: 0 5px 0 0;
-}
 
-.form-controllers {
+form {
     text-align:center;
 }
 
 .info {
     border: 2px solid #69f;
     padding: 10px;
+    color:#69f;
 }
 
 .error {
     border: 2px solid #f96;
     padding: 10px;
+    color: #f96;
 }
+
+.periodic-test {
+    border: 2px solid #B7EBFF;
+    padding:5px;
+    margin:5px 0;
+}
+
+.final-test {
+    border: 2px solid #FFEFB3;
+    padding:5px;
+    margin:5px 0;
+    text-align:center;
+}
+
+.finished {
+    text-align:center;
+    margin:5px 0;
+    border:2px solid #8EFF9C;
+    padding:10px;
+}
+
+.finished .result {
+    width:60px;
+    height:60px;
+    font-size: 50px;
+    padding:10px;
+    background:#8EFF9C;
+    margin: 5px auto;
+    color:white;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;

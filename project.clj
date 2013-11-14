@@ -13,4 +13,6 @@
   :ring {:handler push-ups.handler/app}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
-                        [org.xerial/sqlite-jdbc "3.7.2"]]}})
+                        [org.xerial/sqlite-jdbc "3.7.2"]
+                        [org.clojure/tools.trace "0.7.6"]
+                        ]}})

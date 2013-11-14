@@ -4,6 +4,7 @@
         [clj-time.core :only (minus plus days day-of-week time-zone-for-offset from-time-zone today-at)])
   (:require clojure.pprint)) 
 
+
 (defn- start-week
   "dropdown for selecting start date"
   ([] (start-week "next-week"))
@@ -53,7 +54,7 @@
     (time-in-day time-choice)]))
 
 (def test-course 
- [[0 6 11 21 nil]
+ [[0 6 11 21 26 nil]
   [16 21 25 nil]
   [31 36 40 nil]])
 
@@ -66,26 +67,15 @@
    [:fieldset.result-set [:legend legend] 
     (when-not (or (nil? description) (false? description)) 
       (into [:p] description))
-    [:table 
-     [:tr [:th ""] [:th "Your Age"] [:th {:width "60%"} "How many push-ups did you do?"]]
-     [:tr 
-      [:td (radio-button "age" (= 0 checked-idx) 1)]
-      [:td (label "age-1" "< 40")]
-      [:td {:rowspan 3} (drop-down (str "result")
-                                   (into [] (map-indexed
-                                              (fn [idx [a b]]
-                                                [(if (nil? b)
-                                                   (format "%d & above" a)
-                                                   (format "%d - %d" a (dec b)))
-                                                 (inc idx)])
-                                              (partition 2 1 course))))]]
-     [:tr 
-      [:td (radio-button "age" (= 1 checked-idx) 2)]
-      [:td (label "age-1" "40 - 55")]]
-     [:tr 
-      [:td (radio-button "age" (= 2 checked-idx) 2)]
-      [:td (label "age-1" "> 55")]]]]))
-
+      [:p (label "result" "How many push-ups did you execude? ")]
+      [:p (drop-down (str "result")
+                  (into [] (map-indexed
+                             (fn [idx [a b]]
+                               [(if (nil? b)
+                                  (format "%d & above" a)
+                                  (format "%d - %d" a (dec b)))
+                                idx])
+                             (partition 2 1 course))))]]))
 
 (defmacro form-with-timezone
   "generate form which will automatically add a timezone field and with submit controllers"
@@ -97,7 +87,7 @@
 (defn initial-form
   "generate initial form for creating a new calendar"
   [action]
-  (form-with-timezone [:put action]
+  (form-with-timezone [:post action]
            (exercise-time-choice-set "Arrange exercise time"
                                      "Chose the date and time you'd like to arrange your push-ups exercise at.
                                      You will be able to change the settings after taken the first periodic test 
@@ -140,6 +130,52 @@
 
 (defn parse-test-result
   [params]
-  (let [age (:age params)
-        result (:result params)]
-    (read-string result)))
+  (let [result (:result params)]
+    (when (re-matches #"\d+" result)
+      (read-string (re-find #"[1-9]\d+$|0$" result)))))
+
+
+    (defn periodic-form
+      "generate initial form for creating a new calendar"
+      [action part]
+      [:div.periodic-test
+       [:h4 "After this part's test, you should have a test to decide the plan of next part."]
+       (form-with-timezone [:post action]
+                           (exercise-time-choice-set "Rearrange exercise time"
+                                                     "You can now rearrange your exercise time.")
+                           (test-result-set "Input your test result this part"
+                                            (nth test-course 
+                                                 (case part
+                                                   :part_2 1
+                                                   :part_3 2)))
+                           [:p.form-controllers 
+                            (submit-button "Submit") (reset-button "Reset")])])
+
+    (defn final-test-form
+      [action]
+      (form-with-timezone [:post action]
+                          [:div.final-test
+                           [:h3 "After finshed all your exercise plan, now lets take a final test!"]
+                           [:p (label "result" "How many push-ups can you do now?")]
+                           (text-field "result")]
+                          [:p.form-controllers 
+                           (submit-button "Submit") (reset-button "Reset")]))
+
+
+    (defn test-form-for-ics-record
+      [ics-record]
+      (if-let [final-test-result (:final_test_r ics-record)]
+        [:div.finished
+         [:h3 "This plan has been finished."]
+         [:div.final
+          [:div "Final Test Result"]
+          [:div.result final-test-result]
+          [:div "push-ups"]]]
+        (if-let [part-3-date (:part_3_date ics-record)] 
+          (final-test-form "")
+          (let [part-1-result (:part_1_test_r ics-record)
+                part-2-date (:part_2_date ics-record)]
+            (when part-1-result
+              (if (or (>= part-1-result 3) part-2-date)
+                (periodic-form "" :part_3)
+                (periodic-form "" :part_2)))))))
