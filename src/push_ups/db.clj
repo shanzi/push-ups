@@ -5,12 +5,23 @@
         [clj-time.coerce :only (from-string)]
         [clj-time.core :only (to-time-zone time-zone-for-offset)])
   (:require clojure.pprint
-            [clojure.tools.logging :as log])
-  (:import java.util.UUID))
+            [clojure.tools.logging :as log]
+            [clojure.string :as string])
+  (:import java.util.UUID
+           (java.net URI)))
 
-(def db (if (System/getenv "HEROKU_POSTGRESQL_RED_URL")
-          (postgres {:db (System/getenv "HEROKU_POSTGRESQL_RED_URL")})
-          (sqlite3 {:db "push-ups.db"})))
+(def db 
+  (if-let [url (System/getenv "HEROKU_POSTGRESQL_RED_URL")]
+    (let [db-uri (java.net.URI. url)]
+      (->> (string/split (.getUserInfo db-uri) #":")
+           (#(identity {:db (last (string/split url #"\/"))
+                        :host (.getHost db-uri)
+                        :port (.getPort db-uri)
+                        :user (% 0)
+                        :password (% 1)
+                        :ssl true}))
+           (postgres)))
+    (sqlite3 {:db "push-ups.db"})))
 
 
 (defn setup
