@@ -13,3 +13,6 @@ pom.xml
 *.db
 *.swp
 .nrepl-port
+/target
+/pom.xml
+/.env

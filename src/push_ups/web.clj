@@ -7,7 +7,6 @@
   (:require [push-ups.forms :as forms]
             [push-ups.db :as db]
             [push-ups.plan :as plan]
-            [clojure.tools.trace :as trace]
             clojure.pprint))
 
 
@@ -139,13 +138,11 @@
             (db/update-ics-record permalink {:final_test_r result})
             (view-plan permalink {:info "Congratulations! You have finished your exercise plan."}))
           (when-let [datetime (forms/parse-start-date-time params)]
-            (if (or (>= (:part_1_test_r ics-record) 3) (:part_2_date ics-record))
-              (do 
-                (db/update-ics-record permalink {:part_3_test_r result 
-                                                 :part_3_date datetime})
-                (view-plan permalink {:info "New exercise plan generated!"}))
-              (do
-                (db/update-ics-record permalink {:part_2_test_r result 
-                                               :part_2_date datetime})
-                (view-plan permalink {:error "Failed to generate new plan."})))))
-      (view-plan permalink {:error "Test result should be a number!"})))))
+            (if-let [ret (if (or (>= (:part_1_test_r ics-record) 3) (:part_2_date ics-record))
+                           (db/update-ics-record permalink {:part_3_test_r result 
+                                                            :part_3_date datetime})
+                           (db/update-ics-record permalink {:part_2_test_r result 
+                                                            :part_2_date datetime}))]
+              (view-plan permalink {:info  "New exercise plan generated!"})
+              (view-plan permalink {:error  "Failed to generate new plan."}))))
+        (view-plan permalink {:error "Test result should be a number!"})))))

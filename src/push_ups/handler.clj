@@ -3,7 +3,8 @@
         [ring.util.response :only (not-found)])
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
-            [push-ups.web :as web]))
+            [push-ups.web :as web]
+            [ring.adapter.jetty :as jetty]))
 
 (defn- safe404
   [ret]
@@ -24,3 +25,7 @@
 
 (def app
   (handler/site app-routes))
+
+(defn -main
+  [port]
+  (jetty/run-jetty app {:port (Integer. port) :join? false}))
