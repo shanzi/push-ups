@@ -8,8 +8,8 @@
             [clojure.tools.logging :as log])
   (:import java.util.UUID))
 
-(def db (if (System/getenv "DATABASE_URL")
-          (postgres {:db (System/getenv "DATABASE_URL")})
+(def db (if (System/getenv "HEROKU_POSTGRESQL_RED_URL")
+          (postgres {:db (System/getenv "HEROKU_POSTGRESQL_RED_URL")})
           (sqlite3 {:db "push-ups.db"})))
 
 
