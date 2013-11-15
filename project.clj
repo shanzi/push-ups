@@ -7,7 +7,7 @@
                  [org.xerial/sqlite-jdbc "3.7.2"]
                  [ring/ring-jetty-adapter "1.1.6"]
                  [postgresql/postgresql "8.4-702.jdbc4"]
-                 [korma "0.3.0-RC5"]
+                 [korma "0.3.0-RC6"]
                  [compojure "1.1.5"]
                  [clj-time "0.6.0"]
                  [hiccup "1.0.4"]]
