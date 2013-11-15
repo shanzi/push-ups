@@ -7,6 +7,8 @@
                  [org.xerial/sqlite-jdbc "3.7.2"]
                  [ring/ring-jetty-adapter "1.1.6"]
                  [postgresql/postgresql "8.4-702.jdbc4"]
+                 [clj-bonecp-url "0.1.0"]
+                 [org.slf4j/slf4j-nop "1.7.2"]
                  [korma "0.3.0-RC6"]
                  [compojure "1.1.5"]
                  [clj-time "0.6.0"]

@@ -3,45 +3,38 @@
         korma.db
         korma.core
         [clj-time.coerce :only (from-string)]
-        [clj-time.core :only (to-time-zone time-zone-for-offset)])
+        [clj-time.core :only (to-time-zone time-zone-for-offset)]
+        [clj-bonecp-url.core :only (datasource-from-url)])
   (:require clojure.pprint
-            [clojure.tools.logging :as log]
-            [clojure.string :as string])
-  (:import java.util.UUID
-           (java.net URI)))
+            [clojure.tools.logging :as log])
+  (:import java.util.UUID))
 
-(def db 
+(def dbsource 
   (if-let [url (System/getenv "HEROKU_POSTGRESQL_RED_URL")]
-    (let [db-uri (java.net.URI. url)]
-      (->> (string/split (.getUserInfo db-uri) #":")
-           (#(identity {:db (last (string/split url #"\/"))
-                        :host (.getHost db-uri)
-                        :port (.getPort db-uri)
-                        :user (% 0)
-                        :password (% 1)
-                        :ssl true}))
-           (postgres)))
+    (datasource-from-url url)
     (sqlite3 {:db "push-ups.db"})))
 
 
 (defn setup
   "setup database"
   []
-  (with-connection db
+  (with-connection (if-let [url (System/getenv "HEROKU_POSTGRESQL_RED_URL")]
+                     url dbsource)
                    (create-table :ics_records
                                  [:permalink "varchar(15)" "PRIMARY KEY"]
                                  [:part_1_test_r :integer]
-                                 [:part_1_date :datetime]
+                                 [:part_1_date "varchar(50)"]
                                  [:part_2_test_r :integer]
-                                 [:part_2_date :datetime]
-                                 [:part_3_test_r :datetime]
-                                 [:part_3_date :datetime]
+                                 [:part_2_date "varchar(50)"]
+                                 [:part_3_test_r "varchar(50)"]
+                                 [:part_3_date "varchar(50)"]
                                  [:final_test_r :integer])))
 
+(when (nil? @korma.db/_default)
+  (default-connection {:pool {:datasource dbsource}}))
 
 (defentity ics-records
-           (table :ics_records)
-           (database db))
+  (table :ics_records))
 
 (defmacro dbsafe
   "catch errors throwed by db, avoid interruption"
