@@ -19,6 +19,7 @@
   (context "/i/:permalink" [permalink]
            (GET "/" {flash :flash} (safe404 (web/view-plan permalink flash)))
            (POST "/" {params :params} (safe404 (web/record-test-result permalink params))))
+  (GET "/c/:permalink" [permalink] (safe404 (web/calendar permalink)))
   (route/resources "/statics/")
   (route/not-found "Not Found"))
 

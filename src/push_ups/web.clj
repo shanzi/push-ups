@@ -7,6 +7,7 @@
   (:require [push-ups.forms :as forms]
             [push-ups.db :as db]
             [push-ups.plan :as plan]
+            [push-ups.ical :as ical]
             clojure.pprint))
 
 
@@ -146,3 +147,8 @@
               (view-plan permalink {:info  "New exercise plan generated!"})
               (view-plan permalink {:error  "Failed to generate new plan."}))))
         (view-plan permalink {:error "Test result should be a number!"})))))
+
+(defn calendar
+  [permalink]
+  (when-let [ics-record (db/get-ics-record permalink)]
+    (ical/ical-with-ics-record ics-record)))

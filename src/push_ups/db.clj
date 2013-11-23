@@ -9,17 +9,17 @@
             [clojure.tools.logging :as log])
   (:import java.util.UUID))
 
-(def dbsource 
-  (if-let [url (System/getenv "HEROKU_POSTGRESQL_RED_URL")]
-    (datasource-from-url url)
-    (sqlite3 {:db "push-ups.db"})))
+(if-let [url (System/getenv "HEROKU_POSTGRESQL_RED_URL")]
+  (when (nil? @korma.db/_default)
+    (default-connection {:pool {:datasource (datasource-from-url url)}}))
+  (defdb db (sqlite3 {:db "push-ups.db"})))
 
 
 (defn setup
   "setup database"
   []
   (with-connection (if-let [url (System/getenv "HEROKU_POSTGRESQL_RED_URL")]
-                     url dbsource)
+                     url db)
                    (create-table :ics_records
                                  [:permalink "varchar(15)" "PRIMARY KEY"]
                                  [:part_1_test_r :integer]
@@ -29,9 +29,6 @@
                                  [:part_3_test_r "varchar(50)"]
                                  [:part_3_date "varchar(50)"]
                                  [:final_test_r :integer])))
-
-(when (nil? @korma.db/_default)
-  (default-connection {:pool {:datasource dbsource}}))
 
 (defentity ics-records
   (table :ics_records))
