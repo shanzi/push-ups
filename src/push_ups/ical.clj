@@ -59,7 +59,7 @@
                           "\n\n"
                           (join "\n"
                                 ["BEGIN:VTODO"
-                                (str "TRIGGER;VALUE=DATE-TIME:" (utc-time-str date))
+                                (str "TRIGGER:" (utc-time-str date))
                                 (str "SUMMARY:Its time for "
                                      (if (= 3 (count part)) "final" "periodic")
                                      " test. Log your result at " url)])))) 
