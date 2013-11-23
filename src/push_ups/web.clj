@@ -1,7 +1,7 @@
 (ns push-ups.web
   (:use hiccup.page
         hiccup.element
-        [ring.util.response :only (redirect)]
+        [ring.util.response :only (redirect response content-type)]
         [clj-time.core :only (day-of-week )]
         [clj-time.format :only (formatter-local unparse)])
   (:require [push-ups.forms :as forms]
@@ -16,7 +16,6 @@
 
 (defn- to-string
   [datetime]
-  (clojure.pprint/pprint datetime)
   (unparse date-time-formatter datetime))
 
 (defn base
@@ -151,4 +150,7 @@
 (defn calendar
   [permalink]
   (when-let [ics-record (db/get-ics-record permalink)]
-    (ical/ical-with-ics-record ics-record)))
+    (println (str "GET:" permalink))
+    (content-type 
+      (response (ical/ical-with-ics-record ics-record))
+      "text/calendar")))

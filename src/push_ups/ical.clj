@@ -1,7 +1,7 @@
 (ns push-ups.ical
   (:use [push-ups.plan :only (plan-with-ics-record)]
         [clj-time.format :only (unparse formatters)]
-        [clj-time.core :only (plus days)]
+        [clj-time.core :only (plus days hours)]
         [clojure.string :only (join)]
         [clojure.pprint :only (pprint)]))
 
@@ -29,7 +29,6 @@
   (join "\n\n"
         (map 
           (fn [event]
-            (pprint event)
             (let [date (:date event)
                   sets (:sets event)
                   end (:end event)
@@ -37,18 +36,19 @@
                   summary (generate-summary sets)
                   description (generate-description sets rest_ end)]
               (join "\n"
-                    ["BEGIN:VTODO"
-                     (str "TRIGGER;VALUE=DATE-TIME:" (utc-time-str date))
+                    ["BEGIN:VEVENT"
+                     (str "DTSTART:" (utc-time-str date))
+                     (str "DTEND:" (utc-time-str (plus date (hours 1))))
                      (str "SUMMARY:" summary)
                      (str "DESCRIPTION:" description)
-                     "END:VTODO"])))
+                     "END:VEVENT"])))
           part)))
 
 (defn ical-with-ics-record
   "Generate ics with ics-record"
   [ics-record]
   (let [plan (plan-with-ics-record ics-record)]
-    (str "BEGIN:VCALENDAR\nVERSION:2.0\n"
+    (str "BEGIN:VCALENDAR\nVERSION:2.0\n\n"
          (join "\n"
                (map 
                  (fn [part]
@@ -58,10 +58,12 @@
                      (str (todos-for-part part)
                           "\n\n"
                           (join "\n"
-                                ["BEGIN:VTODO"
-                                (str "TRIGGER:" (utc-time-str date))
-                                (str "SUMMARY:Its time for "
-                                     (if (= 3 (count part)) "final" "periodic")
-                                     " test. Log your result at " url)])))) 
+                                ["BEGIN:VEVENT"
+                                 (str "DTSTART:" (utc-time-str date))
+                                 (str "DTEND:" (utc-time-str (plus date (hours 1))))
+                                 (str "SUMMARY:Its time for "
+                                      (if (= 3 (count part)) "final" "periodic")
+                                      " test. Log your result at " url)
+                                 "END:VEVENT"])))) 
                  plan))
-         "\nEND:VCALENDAR")))
+         "\n\nEND:VCALENDAR")))

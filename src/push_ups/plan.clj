@@ -21,7 +21,6 @@
 
 (defn- plan-for-part
   [part date result]
-  (clojure.pprint/pprint date)
   (let [sets (get exercise-sets part)]
     (if (nil? date)
       nil
