@@ -2,7 +2,7 @@
   (:use hiccup.form
         hiccup.element
         [clj-time.core :only (minus plus days day-of-week time-zone-for-offset from-time-zone today-at ago
-                                    after? now)])
+                                    after? now hour)])
   (:require clojure.pprint)) 
 
 
@@ -45,7 +45,7 @@
   ([legend]
    (exercise-time-choice-set legend nil))
   ([legend description]
-   (exercise-time-choice-set legend "next-week" "1-3-5" 20 description))
+   (exercise-time-choice-set legend "this-week" "1-3-5" 20 description))
   ([legend week-choice day-choice time-choice description]
    [:fieldset.time-choice-set [:legend legend]
     (when-not (or (nil? description) (false? description))
@@ -131,20 +131,28 @@
 
 (defn parse-test-result
   [params]
+  (clojure.pprint/pprint params)
   (let [result (:result params)]
     (when (re-matches #"\d+" result)
-      (read-string (re-find #"[1-9]\d+$|0$" result)))))
+      (read-string (re-find #"[1-9]\d*$|0$" result)))))
 
 
 (defn periodic-form
   "generate initial form for creating a new calendar"
-  [action part]
+  [action part date]
   [:div.periodic-test
-   [:h4 "After this part's test, you should have a test to decide the plan of next part."]
+   [:h4 "After this part's test, you should have a periodic test"]
+   [:p "Try to excude as many push-ups as you can after you had enough rest.
+       Input your result in the form below which will decide your plan of next part."]
+   [:p "If you have subscribe the schedule of your plan, the calendar should update in 24hrs,  
+       If it doesn't, try to resubscribe."] 
    (form-with-timezone [:post action]
                        (exercise-time-choice-set "Rearrange exercise time"
+                                                 (if (<= (day-of-week (now)) 3) "this-week" "next-week")
+                                                 (if (= (day-of-week date) 1) "1-3-5" "2-4-6")
+                                                 (hour date)
                                                  "You can now rearrange your exercise time.")
-                       (test-result-set "Input your test result this part"
+                       (test-result-set "Input your periodic test result of this part"
                                         (nth test-course 
                                              (case part
                                                :part_2 1
@@ -195,9 +203,10 @@
                   (final-test-form ""))
       (let [part-1-result (:part_1_test_r ics-record)
             part-1-date (:part_1_date ics-record)
-            part-2-date (:part_2_date ics-record)]
+            part-2-date (:part_2_date ics-record)
+            date (or part-2-date part-1-date)]
         (when part-1-result
-          (date-limit (or part-2-date part-1-date) false 
+          (date-limit date false 
                       (if (or (>= part-1-result 3) part-2-date)
-                        (periodic-form "" :part_3)
-                        (periodic-form "" :part_2))))))))
+                        (periodic-form "" :part_3 date)
+                        (periodic-form "" :part_2 date))))))))

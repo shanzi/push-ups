@@ -19,10 +19,10 @@
   [sets rest_ end]
   (->>
     (interleave 
-      (map-indexed #(format "+ SET%d(%s push-ups)\\n" (inc %1) %2) sets)
+      (map-indexed #(format "- SET%d(%s push-ups)\\n" (inc %1) %2) sets)
       (map #(format "  REST(%s seconds)\\n\\n" %) (repeat rest_)))
     (apply str)
-    (#(format "%s+ MAX (> %d push-ups)" % end))))
+    (#(format "%s- MAX (> %d push-ups)" % end))))
 
 (defn- todos-for-part
   "Generate todos with part"

@@ -38,8 +38,7 @@
                    :rest (if (= part :part_3)
                            (nth [60 45 45] (mod idx 3))
                            (nth [60 90 120] (mod idx 3)))
-                   }
-                  )
+                   })
                 (nth (part exercise-sets) result)))))))
 
 (defn plan-with-ics-record

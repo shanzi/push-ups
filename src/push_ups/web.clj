@@ -71,7 +71,7 @@
 
 (defn- day-of-week-td
   [date]
-  (let [sym (nth ["Sn" \M \T \W "Th" \F \S] (day-of-week date))]
+  (let [sym (nth ["Sn" \M \T \W "Th" \F \S "Sn"] (day-of-week date))]
     [(keyword (format "td.%s" sym)) sym]))
 
 (defn- view-part

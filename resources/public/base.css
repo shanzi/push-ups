@@ -90,10 +90,11 @@ form {
 }
 
 .finished .result {
-    width:60px;
+    text-align:center;
+    width:100px;
     height:60px;
     font-size: 50px;
-    padding:10px;
+    padding:10px 0;
     background:#8EFF9C;
     margin: 5px auto;
     color:white;
@@ -114,5 +115,5 @@ form {
     display:block;
     width: 620px;
     height:30px;
-    font-size: 28px;
+    font-size: 22px;
 }
