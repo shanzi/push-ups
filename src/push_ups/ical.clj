@@ -1,5 +1,6 @@
 (ns push-ups.ical
   (:use [push-ups.plan :only (plan-with-ics-record)]
+        [push-ups.utils :only (domain)]
         [clj-time.format :only (unparse formatters)]
         [clj-time.core :only (plus days hours)]
         [clojure.string :only (join)]
@@ -21,7 +22,7 @@
       (map-indexed #(format "+ SET%d(%s push-ups)\\n" (inc %1) %2) sets)
       (map #(format "  REST(%s seconds)\\n\\n" %) (repeat rest_)))
     (apply str)
-    (#(format "%s+ MAX (>= %d push-ups)" % end))))
+    (#(format "%s+ MAX (> %d push-ups)" % end))))
 
 (defn- todos-for-part
   "Generate todos with part"
@@ -54,7 +55,7 @@
                  (fn [part]
                    (let [last-event (last part)
                          date (plus (:date last-event) (days 1))
-                         url (str "/i/" (:permalink ics-record))]
+                         url (domain "i" (:permalink ics-record))]
                      (str (todos-for-part part)
                           "\n\n"
                           (join "\n"

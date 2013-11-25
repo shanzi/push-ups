@@ -1,7 +1,8 @@
 (ns push-ups.forms
   (:use hiccup.form
         hiccup.element
-        [clj-time.core :only (minus plus days day-of-week time-zone-for-offset from-time-zone today-at)])
+        [clj-time.core :only (minus plus days day-of-week time-zone-for-offset from-time-zone today-at ago
+                                    after? now)])
   (:require clojure.pprint)) 
 
 
@@ -21,24 +22,24 @@
   "dropdown for selecting day in week to do push-ups"
   ([] (day-in-week "1-3-5"))
   ([choice]
-  [:p
-   (label "day-in-week" "Do push-ups at:")
-   (drop-down "day-in-week" 
-              [["Mon., Wed., Fri." "1-3-5"]
-               ["Tue., Thu., Sat." "2-4-6"]]
-              choice)]))
+   [:p
+    (label "day-in-week" "Do push-ups at:")
+    (drop-down "day-in-week" 
+               [["Mon., Wed., Fri." "1-3-5"]
+                ["Tue., Thu., Sat." "2-4-6"]]
+               choice)]))
 
 (defn- time-in-day
   "dropdown for selecting time in a day to do push-ups"
   ([] (time-in-day 20))
   ([time-choice]
-  [:p
-   (label "time-in-day" "Remind me at:")
-   (drop-down "time-in-day"
-              [["Forenoon" (map #(vector (format "%d am." %) %) (range 7 12))]
-               ["Afternoon" (map #(vector (format "%d pm." (- % 12)) %) (range 13 19))]
-               ["Night" (map #(vector (format "%d pm." (- % 12)) %) (range 19 23))]]
-              time-choice)]))
+   [:p
+    (label "time-in-day" "Remind me at:")
+    (drop-down "time-in-day"
+               [["Forenoon" (map #(vector (format "%d am." %) %) (range 7 12))]
+                ["Afternoon" (map #(vector (format "%d pm." (- % 12)) %) (range 13 19))]
+                ["Night" (map #(vector (format "%d pm." (- % 12)) %) (range 19 23))]]
+               time-choice)]))
 
 (defn exercise-time-choice-set
   ([legend]
@@ -54,9 +55,9 @@
     (time-in-day time-choice)]))
 
 (def test-course 
- [[0 6 11 21 26 nil]
-  [16 21 25 nil]
-  [31 36 40 nil]])
+  [[0 6 11 21 26 nil]
+   [16 21 25 nil]
+   [31 36 40 nil]])
 
 (defn test-result-set
   ([legend course]
@@ -67,15 +68,15 @@
    [:fieldset.result-set [:legend legend] 
     (when-not (or (nil? description) (false? description)) 
       (into [:p] description))
-      [:p (label "result" "How many push-ups did you execude? ")]
-      [:p (drop-down (str "result")
-                  (into [] (map-indexed
-                             (fn [idx [a b]]
-                               [(if (nil? b)
-                                  (format "%d & above" a)
-                                  (format "%d - %d" a (dec b)))
-                                idx])
-                             (partition 2 1 course))))]]))
+    [:p (label "result" "How many push-ups did you execude? ")]
+    [:p (drop-down (str "result")
+                   (into [] (map-indexed
+                              (fn [idx [a b]]
+                                [(if (nil? b)
+                                   (format "%d & above" a)
+                                   (format "%d - %d" a (dec b)))
+                                 idx])
+                              (partition 2 1 course))))]]))
 
 (defmacro form-with-timezone
   "generate form which will automatically add a timezone field and with submit controllers"
@@ -88,20 +89,20 @@
   "generate initial form for creating a new calendar"
   [action]
   (form-with-timezone [:post action]
-           (exercise-time-choice-set "Arrange exercise time"
-                                     "Chose the date and time you'd like to arrange your push-ups exercise at.
-                                     You will be able to change the settings after taken the first periodic test 
-                                     two weeks later.")
-           (test-result-set "Input initial test result"
-                            (get test-course 0)
-                            [nil 
-                             "Before your begin your exercise, try to execute as many good-form push ups as you can
-                            and count the number. Please click "
-                            (link-to "http://www.hundredpushups.com/test.html" "here")
-                            " for more infomation."])
-           [:p.form-controllers 
-            (submit-button "Submit")
-            (reset-button "Reset")]))
+                      (exercise-time-choice-set "Arrange exercise time"
+                                                "Chose the date and time you'd like to arrange your push-ups exercise at.
+                                                You will be able to change the settings after taken the first periodic test 
+                                                two weeks later.")
+                      (test-result-set "Input initial test result"
+                                       (get test-course 0)
+                                       [nil 
+                                        "Before your begin your exercise, try to execute as many good-form push ups as you can
+                                        and count the number. Please click "
+                                        (link-to "http://www.hundredpushups.com/test.html" "here")
+                                        " for more infomation."])
+                      [:p.form-controllers 
+                       (submit-button "Submit")
+                       (reset-button "Reset")]))
 
 
 (defn- day-of-this-week
@@ -135,47 +136,68 @@
       (read-string (re-find #"[1-9]\d+$|0$" result)))))
 
 
-    (defn periodic-form
-      "generate initial form for creating a new calendar"
-      [action part]
-      [:div.periodic-test
-       [:h4 "After this part's test, you should have a test to decide the plan of next part."]
-       (form-with-timezone [:post action]
-                           (exercise-time-choice-set "Rearrange exercise time"
-                                                     "You can now rearrange your exercise time.")
-                           (test-result-set "Input your test result this part"
-                                            (nth test-course 
-                                                 (case part
-                                                   :part_2 1
-                                                   :part_3 2)))
-                           [:p.form-controllers 
-                            (submit-button "Submit") (reset-button "Reset")])])
+(defn periodic-form
+  "generate initial form for creating a new calendar"
+  [action part]
+  [:div.periodic-test
+   [:h4 "After this part's test, you should have a test to decide the plan of next part."]
+   (form-with-timezone [:post action]
+                       (exercise-time-choice-set "Rearrange exercise time"
+                                                 "You can now rearrange your exercise time.")
+                       (test-result-set "Input your test result this part"
+                                        (nth test-course 
+                                             (case part
+                                               :part_2 1
+                                               :part_3 2)))
+                       [:p.form-controllers 
+                        (submit-button "Submit") (reset-button "Reset")])])
 
-    (defn final-test-form
-      [action]
-      (form-with-timezone [:post action]
-                          [:div.final-test
-                           [:h3 "After finshed all your exercise plan, now lets take a final test!"]
-                           [:p (label "result" "How many push-ups can you do now?")]
-                           (text-field "result")]
-                          [:p.form-controllers 
-                           (submit-button "Submit") (reset-button "Reset")]))
+(defn final-test-form
+  [action]
+  (form-with-timezone [:post action]
+                      [:div.final-test
+                       [:h3 "After finshed all your exercise plan, now lets take a final test!"]
+                       [:p (label "result" "How many push-ups can you do now?")]
+                       (text-field "result")]
+                      [:p.form-controllers 
+                       (submit-button "Submit") (reset-button "Reset")]))
+
+(defn- date-interval
+  ([start end] (date-interval start end []))
+  ([start end interval]
+   (if (after? start end)
+     interval
+     (recur (plus start (days 1)) end (concat interval [start])))))
+
+(defn- date-limit
+  [date final? form]
+  (if (after? (plus date (days 10)) (now))
+    [:div.periodic-test
+     "You are going to have " 
+     (if final? "the final test" "a periodic test")
+     " after you finished this part's exercise.
+     (About " (count (date-interval (now) (plus date (days 10))))
+     " days later)" ]
+    form))
 
 
-    (defn test-form-for-ics-record
-      [ics-record]
-      (if-let [final-test-result (:final_test_r ics-record)]
-        [:div.finished
-         [:h3 "This plan has been finished."]
-         [:div.final
-          [:div "Final Test Result"]
-          [:div.result final-test-result]
-          [:div "push-ups"]]]
-        (if-let [part-3-date (:part_3_date ics-record)] 
-          (final-test-form "")
-          (let [part-1-result (:part_1_test_r ics-record)
-                part-2-date (:part_2_date ics-record)]
-            (when part-1-result
-              (if (or (>= part-1-result 3) part-2-date)
-                (periodic-form "" :part_3)
-                (periodic-form "" :part_2)))))))
+(defn test-form-for-ics-record
+  [ics-record]
+  (if-let [final-test-result (:final_test_r ics-record)]
+    [:div.finished
+     [:h3 "This plan has been finished."]
+     [:div.final
+      [:div "Final Test Result"]
+      [:div.result final-test-result]
+      [:div "push-ups"]]]
+    (if-let [part-3-date (:part_3_date ics-record)] 
+      (date-limit part-3-date true
+                  (final-test-form ""))
+      (let [part-1-result (:part_1_test_r ics-record)
+            part-1-date (:part_1_date ics-record)
+            part-2-date (:part_2_date ics-record)]
+        (when part-1-result
+          (date-limit (or part-2-date part-1-date) false 
+                      (if (or (>= part-1-result 3) part-2-date)
+                        (periodic-form "" :part_3)
+                        (periodic-form "" :part_2))))))))

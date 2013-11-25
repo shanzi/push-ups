@@ -37,6 +37,10 @@ td.F, td.S {background: #FFD1D2;}
     margin: 0 auto;
 }
 
+div.logo {
+    text-align: center;
+}
+
 .content {
     min-height:10em;
 }
@@ -98,3 +102,17 @@ form {
     -ms-border-radius: 10px;
     -o-border-radius: 10px;
     border-radius: 10px;
+}
+
+.ics {
+    border: 1px solid #C0D483;
+    background: #D7EE94;
+    padding: 5px;
+}
+
+.ics input {
+    display:block;
+    width: 620px;
+    height:30px;
+    font-size: 28px;
+}

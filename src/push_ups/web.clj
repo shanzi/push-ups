@@ -1,6 +1,8 @@
 (ns push-ups.web
   (:use hiccup.page
         hiccup.element
+        [push-ups.utils :only (domain)]
+        [hiccup.form :only (text-field)]
         [ring.util.response :only (redirect response content-type)]
         [clj-time.core :only (day-of-week )]
         [clj-time.format :only (formatter-local unparse)])
@@ -26,7 +28,7 @@
     [:head [:title title]]
     [:body
      [:div#frame
-      (image "/statics/logo.png" "logo")
+      [:div.logo (image "/statics/logo.png" "logo")]
       [:div.content content]
       [:div.footer "xiuxiu.de (c) 2013"]]
      (include-js "/statics/base.js")]))
@@ -113,6 +115,14 @@
           (when-let [error (:error flash)] [:p.error error])
           (when-let [info (:info flash)] [:p.info info])
           [:h1 "Your plan detail"]
+          [:div.ics 
+           [:p "You can subscribe the schedule of your exercise plan with Google Calendar
+               or Apple calendar through this address:"]
+           (text-field {:readonly true} "ics" (domain "c" (:permalink ics-record)))
+           [:p "(HOWTO: " 
+            (link-to "https://support.google.com/calendar/answer/37100" "Google Calendar")
+            ", "
+            (link-to "http://support.apple.com/kb/ht5029" "Apple Calendar") " )" ]]
           [:p [:b "Rest*"] 
            " is the time of rest your should have between
            each set of push-ups, in seconds."]
