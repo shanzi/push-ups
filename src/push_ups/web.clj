@@ -43,6 +43,9 @@
          (link-to "http://www.hundredpushups.com/" "handredspushups.com") "."]
         [:p "No need to register, just fill in the form below, you will get an ics format
             calendar subscription source."]
+        [:p "This tiny website is open source and hosted at " 
+         (link-to "https://github.com/shanzi/push-ups" "Github")
+         ".Issues and pull requests are welcome."]
         [:p.initial-form
          (forms/initial-form "/new")]))
 
