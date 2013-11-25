@@ -4,7 +4,7 @@
 (defn domain
   "Get domain of app"
   ([]
-   (or (System/getenv "URL")
+   (or (System/getenv "HOST")
        "http://localhost:3000"))
   ([& pathcomponents]
      (join "/" (cons (domain) pathcomponents))))
